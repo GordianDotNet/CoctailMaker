@@ -1,0 +1,98 @@
+﻿@page "/logevents"
+
+@using System.Linq
+@using CoctailMakerApp.Data
+@using CoctailMakerApp.Data.Services
+@using CoctailMakerApp.Data.Entities
+@inject LogEventService LogEventService
+
+<h1>LogEvents</h1>
+
+<p>This component demonstrates fetching data from a service.</p>
+
+@if (loadingException != null)
+{
+    <p><em>Loading failed: @loadingException.Message</em></p>
+    <button class="btn btn-primary" @onclick="DeleteDatabase">Delete database</button>
+}
+else if (logEvents == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <button class="btn btn-primary" @onclick="AddLogEvent">Add event</button>
+    <button class="btn btn-primary" @onclick="DeleteDatabase">Delete database</button>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Message</th>
+                <th>FuncName</th>
+                <th>File</th>
+                <th>Line</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var logEvent in logEvents)
+            {
+                <tr>
+                    <td>@logEvent.Id</td>
+                    <td>@logEvent.Created.ToShortDateString()</td>
+                    <td>@logEvent.Type</td>
+                    <td>@logEvent.Message</td>
+                    <td>@logEvent.Func</td>
+                    <td>@logEvent.File</td>
+                    <td>@logEvent.Line</td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+}
+
+@code {
+    private LogEvent[] logEvents;
+    private Exception loadingException;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLogEvents();
+    }
+
+    private async Task LoadLogEvents()
+    {
+        try
+        {
+            logEvents = (await LogEventService.GetLogEvents()).OrderByDescending(x => x.Id).ToArray();
+        }
+        catch (Exception ex)
+        {
+            loadingException = ex;
+        }
+    }
+
+    private async Task AddLogEvent()
+    {
+        await LogEventService.AddLogEvent($"Hallo {DateTime.Now}");
+        await Reload();
+    }
+
+    private async Task DeleteDatabase()
+    {
+        loadingException = null;
+        await LogEventService.DeleteDatabase();
+        await Reload();
+    }
+
+    private async Task Reload()
+    {
+        await LoadLogEvents();
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+}
