@@ -1,8 +1,9 @@
 @page "/systemconfiguration"
 
 @using CoctailMakerApp.Data.Services
-@using CoctailMakerApp.Data
+@using CoctailMakerApp.Data.Entities
 @inject SystemConfigService SystemConfigService
+@inject IngredientsService IngredientsService
 
 <h1>Systemkonfiguration</h1>
 
@@ -11,7 +12,7 @@
     <p><em>Loading failed: @loadingException.Message</em></p>
     <button class="btn btn-primary" @onclick="DeleteDatabase">Delete database</button>
 }
-else if (systemConfig == null)
+else if (systemConfig == null && incredients == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -19,40 +20,68 @@ else
 {
     <button class="btn btn-primary" @onclick="Save">Save</button>
     <button class="btn btn-primary" @onclick="DeleteDatabase">Delete database</button>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Value</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>@nameof(systemConfig.StringMe)</td>
-                <td><input @bind="systemConfig.StringMe" type="text"/></td>
-            </tr>
-            <tr>
-                <td>@nameof(systemConfig.Value1)</td>
-                <td><input @bind="systemConfig.Value1" /></td>
-            </tr>
-            <tr>
-                <td>@nameof(systemConfig.Value2)</td>
-                <td><input @bind="systemConfig.Value2" /></td>
-            </tr>
-            <tr>
-                <td>@nameof(systemConfig.Value3)</td>
-                <td><input @bind="systemConfig.Value3" /></td>
-            </tr>
-            <tr>
-                <td>@nameof(systemConfig.Value4)</td>
-                <td><input @bind="systemConfig.Value4" /></td>
-            </tr>
-        </tbody>
+    <!-- EditForm is required to use InputNumber and InputDate -->
+    <EditForm Model="systemConfig">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@nameof(SystemConfig.MaxIngredients)</td>
+                    <td><InputNumber @bind-Value="systemConfig.MaxIngredients" /></td>
+                </tr>
+                @for (int i = 0; systemConfig.IngredientIds != null && i < systemConfig.MaxIngredients && i < systemConfig.IngredientIds.Length; i++)
+                {
+                    var index = i;
+                    <tr>
+                        <td>Ingredient[@index]</td>
+                        <td>
+                            <select class="form-control" @onchange="(e => SelectIncredient(index, e))" value="@systemConfig.IngredientIds[index]">
+                                <option value="0">-- Select Ingredient --</option>
+                                @foreach (var incredient in incredients)
+                                {
+                                    <option value="@incredient.Id">@incredient.Name</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                }
+                <tr>
+                    <td>@nameof(SystemConfig.StringValue)</td>
+                    <td><input @bind="systemConfig.StringValue" type="text" /></td>
+                </tr>
+                <tr>
+                    <td>@nameof(SystemConfig.StringValue)</td>
+                    <td><input @bind="systemConfig.StringValue" type="text" /></td>
+                </tr>
+                <tr>
+                    <td>@nameof(SystemConfig.IntValue)</td>
+                    <td><InputNumber @bind-Value="systemConfig.IntValue" /></td>
+                </tr>
+                <tr>
+                    <td>@nameof(SystemConfig.FloatValue)</td>
+                    <td><InputNumber @bind-Value="systemConfig.FloatValue" /></td>
+                </tr>
+                <tr>
+                    <td>@nameof(SystemConfig.DoubleValue)</td>
+                    <td><InputNumber @bind-Value="systemConfig.DoubleValue" /></td>
+                </tr>
+                <tr>
+                    <td>@nameof(SystemConfig.DateTimeValue)</td>
+                    <td><InputDate @bind-Value="systemConfig.DateTimeValue" /></td>
+                </tr>
+            </tbody>
 
-    </table>
+        </table>
+    </EditForm>
 }
 
 @code {
+    private List<Ingredient> incredients;
     private SystemConfig systemConfig;
     private Exception loadingException;
 
@@ -66,6 +95,7 @@ else
         try
         {
             systemConfig = await SystemConfigService.Load();
+            incredients = await IngredientsService.LoadAll();
         }
         catch (Exception ex)
         {
@@ -76,22 +106,19 @@ else
     private async Task Save()
     {
         await SystemConfigService.Save(systemConfig);
-        await Reload();
+        await Load();
     }
 
     private async Task DeleteDatabase()
     {
         loadingException = null;
         await SystemConfigService.DeleteDatabase();
-        await Reload();
+        await Load();
     }
 
-    private async Task Reload()
+    private void SelectIncredient(int index, ChangeEventArgs e)
     {
-        await Load();
-        await InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
+        if (int.TryParse(e.Value.ToString(), out var incredientId))
+            systemConfig.IngredientIds[index] = incredientId;
     }
 }

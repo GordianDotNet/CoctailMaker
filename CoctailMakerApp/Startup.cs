@@ -30,6 +30,8 @@ namespace CoctailMakerApp
             services.AddServerSideBlazor();
             services.AddSingleton<LogEventService>();
             services.AddSingleton<SystemConfigService>();
+            services.AddSingleton<IngredientsService>();
+            services.AddSingleton<RecipeService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

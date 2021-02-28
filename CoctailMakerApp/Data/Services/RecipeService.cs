@@ -1,34 +1,33 @@
 using CoctailMakerApp.Data.Context;
 using CoctailMakerApp.Data.Entities;
-using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace CoctailMakerApp.Data.Services
 {
-    public class SystemConfigService : DatabaseServiceBase
+
+    public class RecipeService : DatabaseServiceBase
     {
-        public Task<SystemConfig> Load()
+        public Task<List<Recipe>> LoadAll()
         {
             return Task.Run(() =>
             {
                 using (var dbContext = new SqliteDbContext())
                 {
-                    return dbContext.SystemJsonConfigs.OrderByDescending(x => x.Id).FirstOrDefault()?.Content ?? new SystemConfig();
+                    return dbContext.Recipes.ToList();
                 }
             });
         }
 
-        public Task Save(SystemConfig systemConfig)
+        private Task Save(Recipe recipe)
         {
-            systemConfig?.UpdateIngredientIds();
-
             return Task.Run(() =>
             {
                 using (var dbContext = new SqliteDbContext())
                 {
-                    dbContext.SystemJsonConfigs.Add(new SystemJsonConfig { Content = systemConfig });
+                    dbContext.Recipes.Add(recipe);
                     dbContext.SaveChanges();
                 }
             });

@@ -10,7 +10,7 @@ namespace CoctailMakerApp.Data.Services
 
     public class LogEventService : DatabaseServiceBase
     {
-        public Task<List<LogEvent>> GetLogEvents()
+        public Task<List<LogEvent>> LoadAll()
         {
             return Task.Run(() =>
             {
@@ -21,9 +21,9 @@ namespace CoctailMakerApp.Data.Services
             });
         }
 
-        public Task AddLogEvent(string message, LogEventType logEventType = LogEventType.Debug, [CallerMemberName] string funcName = "", [CallerFilePath] string file = "", [CallerLineNumber] int line = 0)
+        public Task Save(string message, LogEventType logEventType = LogEventType.Debug, [CallerMemberName] string funcName = "", [CallerFilePath] string file = "", [CallerLineNumber] int line = 0)
         {
-            return AddLogEvent(new LogEvent
+            return Save(new LogEvent
             {
                 Type = logEventType,
                 Message = message,
@@ -33,7 +33,7 @@ namespace CoctailMakerApp.Data.Services
             });
         }
 
-        private Task AddLogEvent(LogEvent logEvent)
+        private Task Save(LogEvent logEvent)
         {
             return Task.Run(() =>
             {

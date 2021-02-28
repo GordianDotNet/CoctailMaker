@@ -1,5 +1,6 @@
 ﻿using CoctailMakerApp.Data.Entities;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.IO;
 using System.Reflection;
 
@@ -13,9 +14,11 @@ namespace CoctailMakerApp.Data.Context
             Database.EnsureCreated();
         }
 
-        public DbSet<Blog> Blogs { get; set; }
+        //public DbSet<Blog> Blogs { get; set; }
         public DbSet<LogEvent> LogEvents { get; set; }
         public DbSet<SystemJsonConfig> SystemJsonConfigs { get; set; }
+        public DbSet<Recipe> Recipes { get; set; }
+        public DbSet<Ingredient> Ingredients { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -28,19 +31,29 @@ namespace CoctailMakerApp.Data.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Blog>(entity =>
-            {
-                entity.HasKey(e => e.BlogId);
-                entity.HasIndex(e => e.Title).IsUnique();
-                entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            });
+            //modelBuilder.Entity<Blog>(entity =>
+            //{
+            //    entity.HasKey(e => e.BlogId);
+            //    entity.HasIndex(e => e.Title).IsUnique();
+            //    entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            //});
 
             modelBuilder.Entity<LogEvent>(entity =>
             {
                 entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
 
-            modelBuilder.Entity<Entities.SystemJsonConfig>(entity =>
+            modelBuilder.Entity<SystemJsonConfig>(entity =>
+            {
+                entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
+
+            modelBuilder.Entity<Recipe>(entity =>
+            {
+                entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
+
+            modelBuilder.Entity<Ingredient>(entity =>
             {
                 entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
             });

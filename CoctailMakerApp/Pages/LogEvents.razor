@@ -59,14 +59,14 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadLogEvents();
+        await Load();
     }
 
-    private async Task LoadLogEvents()
+    private async Task Load()
     {
         try
         {
-            logEvents = (await LogEventService.GetLogEvents()).OrderByDescending(x => x.Id).ToArray();
+            logEvents = (await LogEventService.LoadAll()).OrderByDescending(x => x.Id).ToArray();
         }
         catch (Exception ex)
         {
@@ -76,23 +76,14 @@ else
 
     private async Task AddLogEvent()
     {
-        await LogEventService.AddLogEvent($"Hallo {DateTime.Now}");
-        await Reload();
+        await LogEventService.Save($"Hallo {DateTime.Now}");
+        await Load();
     }
 
     private async Task DeleteDatabase()
     {
         loadingException = null;
         await LogEventService.DeleteDatabase();
-        await Reload();
-    }
-
-    private async Task Reload()
-    {
-        await LoadLogEvents();
-        await InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
+        await Load();
     }
 }

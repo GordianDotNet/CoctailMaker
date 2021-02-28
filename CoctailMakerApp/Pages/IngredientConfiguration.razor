@@ -1,0 +1,121 @@
+﻿@page "/ingredientconfiguration"
+
+@using System.Linq
+@using CoctailMakerApp.Data
+@using CoctailMakerApp.Data.Services
+@using CoctailMakerApp.Data.Entities
+@inject IngredientsService IngredientsService
+
+<h1>Zutaten Konfiguration</h1>
+<button @onclick="AddIngredient" class="btn btn-primary btn-rounded mb-3"><span class="oi oi-plus"></span></button>
+
+@if (ingredients == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    
+<div class="row">
+    @foreach (var ingredient in ingredients)
+    {
+        <EditForm Model="ingredient">
+            <div class="col-sm-6">
+                <div class="card mb-3" style="width: 24rem;">
+                    @if (!string.IsNullOrWhiteSpace(ingredient.Base64Image))
+                    {
+                        <img src="@ingredient.Base64Image" class="card-img-top">
+                        <label class="btn btn-sm center-block btn-file" title="Change image ...">
+                            <span class="oi oi-data-transfer-upload" aria-hidden="true"></span>
+                            <InputFile OnChange="@(e => OnInputFileChange(e, ingredient))" style="display: none;" />
+                        </label>
+                    }
+                    else
+                    {
+                        <div class="card-header">
+                            <span class="oi oi-image" aria-hidden="true"></span>
+                        </div>
+                        <label class="btn btn-info btn-sm center-block btn-file" title="Add image ...">
+                            <span class="oi oi-data-transfer-upload" aria-hidden="true"></span>
+                            <InputFile OnChange="@(e => OnInputFileChange(e, ingredient))" style="display: none;" />
+                        </label>
+                    }
+                    <div class="card-body">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><span class="oi oi-header" aria-hidden="true"></span></span>
+                            </div>
+                            <input type="text" class="form-control" @bind="ingredient.Name" placeholder="Name">
+                        </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><span class="oi oi-droplet"></span></span>
+                            </div>
+                            <InputNumber class="form-control" @bind-Value="ingredient.Quantity"></InputNumber>
+                            <div class="input-group-append">
+                                <span class="input-group-text">@ingredient.QuantityUnit</span>
+                            </div>
+                        </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><span class="oi oi-text" aria-hidden="true"></span></span>
+                            </div>
+                            <textarea class="form-control" @bind="ingredient.Text"></textarea>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-outline-danger" @onclick="(e => Delete(ingredient))">Delete</button>
+                        <button class="btn btn-primary" @onclick="(e => Save(ingredient))">Save</button>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+    }
+</div>
+}
+
+@code {
+    private Ingredient[] ingredients;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        ingredients = (await IngredientsService.LoadAll()).OrderByDescending(x => x.Id).ToArray();
+    }
+
+    private async Task AddIngredient()
+    {
+        await IngredientsService.Save(new Ingredient { Name = "", Base64Image = "", Quantity = 0, QuantityUnit = Unit.ml, Text = "" });
+        await Load();
+    }
+
+    private async Task Save(Ingredient ingredient)
+    {
+        await IngredientsService.Save(ingredient);
+    }
+
+    private async Task Delete(Ingredient ingredient)
+    {
+        await IngredientsService.Delete(ingredient);
+        await Load();
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e, Ingredient ingredient)
+    {
+        var maxAllowedFiles = 1;
+        var format = "image/png";
+
+        foreach (var imageFile in e.GetMultipleFiles(maxAllowedFiles))
+        {
+            var resizedImageFile = await imageFile.RequestImageFileAsync(format, 600, 600);
+            var buffer = new byte[resizedImageFile.Size];
+            await resizedImageFile.OpenReadStream().ReadAsync(buffer);
+            var imageDataUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+            ingredient.Base64Image = imageDataUrl;
+        }
+    }
+}

@@ -10,17 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- extends watching group to include *.razor files -->
-    <Watch Include="..\CoctailMakerApp\**\*.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Watch Remove="Pages\LogEvents.razor" />
-    <Watch Remove="Pages\Measurements.razor" />
-    <Watch Remove="Pages\SystemConfiguration.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.0-preview.1.21102.2" />
   </ItemGroup>
 
