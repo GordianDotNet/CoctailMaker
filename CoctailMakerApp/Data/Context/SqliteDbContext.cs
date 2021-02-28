@@ -48,12 +48,12 @@ namespace CoctailMakerApp.Data.Context
                 entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
 
-            modelBuilder.Entity<Recipe>(entity =>
+            modelBuilder.Entity<Ingredient>(entity =>
             {
                 entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
 
-            modelBuilder.Entity<Ingredient>(entity =>
+            modelBuilder.Entity<Recipe>(entity =>
             {
                 entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
             });

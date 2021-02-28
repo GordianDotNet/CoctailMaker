@@ -27,14 +27,34 @@ namespace CoctailMakerApp.Data.Services
             });
         }
 
-        private Task Save(Recipe recipe)
+        public Task Save(Recipe recipe)
         {
             return Task.Run(() =>
             {
                 using (var dbContext = new SqliteDbContext())
                 {
-                    dbContext.Recipes.Add(recipe);
+                    if (recipe.Id != 0)
+                    {
+                        dbContext.Recipes.Update(recipe);
+                    }
+                    else
+                    {
+                        dbContext.Recipes.Add(recipe);
+                    }
                     dbContext.SaveChanges();
+                }
+            });
+        }
+
+        public Task Delete(Recipe recipe)
+        {
+            return Task.Run(() =>
+            {
+                using (var dbContext = new SqliteDbContext())
+                {
+                    dbContext.Recipes.Remove(recipe);
+                    dbContext.SaveChanges();
+                    //ToastService.ShowSuccess($"{nameof(Ingredient)}: [{ingredient.Id}] '{ingredient.Name}' [Deleted]");
                 }
             });
         }

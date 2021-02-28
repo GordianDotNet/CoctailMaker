@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace CoctailMakerApp.Data.Services
 {
-    public class IngredientsService : DatabaseServiceBase
+    public class IngredientService : DatabaseServiceBase
     {
-        public IngredientsService(ILogger<IngredientsService> logger) : base(logger)
+        public IngredientService(ILogger<IngredientService> logger) : base(logger)
         {
         }
 

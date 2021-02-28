@@ -1,8 +1,6 @@
 ﻿@page "/ingredientconfiguration"
 
-@using System.Linq
-
-<h1>Zutaten Konfiguration</h1>
+<h1>Zutaten verwalten</h1>
 <button @onclick="AddIngredient" class="btn btn-primary btn-rounded mb-3"><i class="fa fa-plus-circle" /></button>
 
 @if (ingredients == null)
@@ -11,68 +9,66 @@
 }
 else
 {
-    
-<div class="row">
-    @foreach (var ingredient in ingredients)
-    {
-        <EditForm Model="ingredient">
-            <div class="col-sm-6">
-                <div class="card mb-3" style="width: 24rem;">
-                    @if (!string.IsNullOrWhiteSpace(ingredient.Base64Image))
-                    {
-                        <img src="@ingredient.Base64Image" class="card-img-top">
-                        <label class="btn btn-sm center-block btn-file" title="Change image ...">
-                            <span class="oi oi-data-transfer-upload" aria-hidden="true"></span>
+
+    <div class="row">
+        @foreach (var ingredient in ingredients)
+        {
+            <EditForm Model="ingredient">
+                <div class="col-sm-6">
+                    <div class="card mb-3" style="width: 24rem;">
+                        @if (!string.IsNullOrWhiteSpace(ingredient.Base64Image))
+                        {
+                            
+                        <label class="btn btn-sm center-block btn-file" title="Change image ...">                            
+                            <img src="@ingredient.Base64Image" class="card-img-top">
                             <InputFile OnChange="@(e => OnInputFileChange(e, ingredient))" style="display: none;" />
                         </label>
-                    }
-                    else
-                    {
-                        <div class="card-header">
-                            <span class="oi oi-image" aria-hidden="true"></span>
-                        </div>
-                        <label class="btn btn-info btn-sm center-block btn-file" title="Add image ...">
-                            <span class="oi oi-data-transfer-upload" aria-hidden="true"></span>
-                            <InputFile OnChange="@(e => OnInputFileChange(e, ingredient))" style="display: none;" />
-                        </label>
-                    }
-                    <div class="card-body">
-                        <div class="input-group mb-3">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fa fa-id-badge" /></span>
+                        }
+                        else
+                        {
+                            <label class="btn btn-info btn-sm center-block btn-file" title="Add image ...">
+                                <span class="fa fa-image">&nbsp;&nbsp;&nbsp;</span>
+                                <span class="fa fa-upload"></span>
+                                <InputFile OnChange="@(e => OnInputFileChange(e, ingredient))" style="display: none;" />
+                            </label>
+                        }
+                        <div class="card-body">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-id-badge" /></span>
+                                </div>
+                                <input type="text" class="form-control" @bind="ingredient.Name" placeholder="Name">
                             </div>
-                            <input type="text" class="form-control" @bind="ingredient.Name" placeholder="Name">
-                        </div>
-                        <div class="input-group mb-3">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><span class="oi oi-droplet"></span></span>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><span class="oi oi-droplet"></span></span>
+                                </div>
+                                <InputNumber class="form-control" @bind-Value="ingredient.Quantity"></InputNumber>
+                                <div class="input-group-append">
+                                    <span class="input-group-text">@ingredient.QuantityUnit</span>
+                                </div>
                             </div>
-                            <InputNumber class="form-control" @bind-Value="ingredient.Quantity"></InputNumber>
-                            <div class="input-group-append">
-                                <span class="input-group-text">@ingredient.QuantityUnit</span>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-file-alt" /></span>
+                                </div>
+                                <textarea class="form-control" @bind="ingredient.Text"></textarea>
                             </div>
                         </div>
-                        <div class="input-group mb-3">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fa fa-file-alt" /></span>
-                            </div>
-                            <textarea class="form-control" @bind="ingredient.Text"></textarea>
+                        <div class="card-footer">
+                            <button class="btn btn-danger" @onclick="(e => Delete(ingredient))"><i class="fa fa-trash" /></button>
+                            <button class="btn btn-primary" @onclick="(e => Save(ingredient))"><i class="fa fa-save" /></button>
                         </div>
-                    </div>
-                    <div class="card-footer">
-                        <button class="btn btn-danger" @onclick="(e => Delete(ingredient))"><i class="fa fa-trash" /></button>
-                        <button class="btn btn-primary" @onclick="(e => Save(ingredient))"><i class="fa fa-save" /></button>
                     </div>
                 </div>
-            </div>
-        </EditForm>
-    }
-</div>
+            </EditForm>
+        }
+    </div>
 }
 
 @code {
     [Inject]
-    IngredientsService IngredientsService { get; set; }
+    IngredientService IngredientsService { get; set; }
     [Inject]
     IToastService ToastService { get; set; }
 

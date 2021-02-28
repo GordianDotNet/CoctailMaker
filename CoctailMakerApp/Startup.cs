@@ -40,7 +40,7 @@ namespace CoctailMakerApp
 
             services.AddSingleton<LogEventService>();
             services.AddSingleton<SystemConfigService>();
-            services.AddSingleton<IngredientsService>();
+            services.AddSingleton<IngredientService>();
             services.AddSingleton<RecipeService>();
             services.AddSingleton<MainLoopService>();
         }

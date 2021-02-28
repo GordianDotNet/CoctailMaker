@@ -1,0 +1,164 @@
+@page "/recipeconfiguration"
+
+<h1>Rezepte verwalten</h1>
+<button @onclick="AddRecipe" class="btn btn-primary btn-rounded mb-3"><i class="fa fa-plus-circle" /></button>
+
+@if (recipes == null)
+{
+    <p><em><i class="fa fa-database" />Loading...</em></p>
+}
+else
+{
+
+    <div class="row">
+        @foreach (var recipe in recipes)
+        {
+            <EditForm Model="recipe">
+                <div class="col-sm-6">
+                    <div class="card mb-3" style="width: 24rem;">
+                        @if (!string.IsNullOrWhiteSpace(recipe.Base64Image))
+                        {
+
+                            <label class="btn btn-sm center-block btn-file" title="Change image ...">
+                                <img src="@recipe.Base64Image" class="card-img-top">
+                                <InputFile OnChange="@(e => OnInputFileChange(e, recipe))" style="display: none;" />
+                            </label>
+                        }
+                        else
+                        {
+                            <label class="btn btn-info btn-sm center-block btn-file" title="Add image ...">
+                                <span class="fa fa-image">&nbsp;&nbsp;&nbsp;</span>
+                                <span class="fa fa-upload"></span>
+                                <InputFile OnChange="@(e => OnInputFileChange(e, recipe))" style="display: none;" />
+                            </label>
+                        }
+                        <div class="card-body">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-id-badge" /></span>
+                                </div>
+                                <input type="text" class="form-control" @bind="recipe.Name" placeholder="Name">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-file-alt" /></span>
+                                </div>
+                                <textarea class="form-control" @bind="recipe.Text"></textarea>
+                            </div>
+                            @if ((recipe?.Content?.Ingredients?.Count ?? 0) == 0)
+                            {
+                                <span class="btn btn-outline-info" @onclick="(() => AddIncredientId(recipe, 0))"><i class="fa fa-plus-circle" /></span>
+                            }
+                            @for (int i = 0; i < (recipe?.Content?.Ingredients?.Count ?? 0); i++)
+                            {
+                                //Required for onchange binding
+                                var index = i;
+                                <div class="input-group mb-3">
+                                    <select class="form-control" @onchange="(e => SelectIncredient(recipe, index, e))" value="@recipe.Content.Ingredients[index].IngredientId">
+                                        <option value="0">-- Select Ingredient --</option>
+                                        @foreach (var incredient in incredients)
+                                        {
+                                            <option value="@incredient.Id">@incredient.Name</option>
+                                        }
+                                    </select>
+                                    <div class="input-group-append">
+                                        <span class="btn btn-outline-info" @onclick="(() => AddIncredientId(recipe, index))"><i class="fa fa-plus-circle" /></span>
+                                        <span class="btn btn-outline-danger" @onclick="(() => RemoveIncredientId(recipe, index))"><i class="fa fa-trash" /></span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-danger" @onclick="(e => Delete(recipe))"><i class="fa fa-trash" /></button>
+                            <button class="btn btn-primary" @onclick="(e => Save(recipe))"><i class="fa fa-save" /></button>
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+        }
+    </div>
+}
+
+@code {
+    [Inject]
+    RecipeService RecipeService { get; set; }
+    [Inject]
+    IngredientService IngredientService { get; set; }
+    [Inject]
+    IToastService ToastService { get; set; }
+
+    private Recipe[] recipes;
+    private Ingredient[] incredients;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        recipes = (await RecipeService.LoadAll()).OrderByDescending(x => x.Id).ToArray();
+        incredients = (await IngredientService.LoadAll()).OrderBy(x => x.Name).ToArray();
+    }
+
+    private async Task AddRecipe()
+    {
+        await RecipeService.Save(new Recipe { Name = "", Base64Image = "", Text = "", Content = new RecipeConfig() });
+        ToastService.ShowSuccess($"[Saved] New Recipe");
+        await Load();
+    }
+
+    private async Task Save(Recipe recipe)
+    {
+        await RecipeService.Save(recipe);
+        ToastService.ShowSuccess($"[Saved] Recipe {recipe.Name} ({recipe.Id})");
+    }
+
+    private async Task Delete(Recipe recipe)
+    {
+        await RecipeService.Delete(recipe);
+        ToastService.ShowWarning($"[Deleted] Recipe {recipe.Name} ({recipe.Id})");
+        await Load();
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e, Recipe recipe)
+    {
+        var maxAllowedFiles = 1;
+        var format = "image/png";
+
+        foreach (var imageFile in e.GetMultipleFiles(maxAllowedFiles))
+        {
+            var resizedImageFile = await imageFile.RequestImageFileAsync(format, 600, 600);
+            var buffer = new byte[resizedImageFile.Size];
+            await resizedImageFile.OpenReadStream().ReadAsync(buffer);
+            var imageDataUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+            recipe.Base64Image = imageDataUrl;
+        }
+    }
+
+    private void SelectIncredient(Recipe recipe, int index, ChangeEventArgs e)
+    {
+        var content = recipe.Content;
+        if (int.TryParse(e.Value.ToString(), out var incredientId))
+            content.Ingredients[index].IngredientId = incredientId;
+        // important to write changes to json!
+        recipe.Content = content;
+    }
+
+    private void RemoveIncredientId(Recipe recipe, int index)
+    {
+        var content = recipe.Content;
+        content.Ingredients.RemoveAt(index);
+        // important to write changes to json!
+        recipe.Content = content;
+    }
+
+    private void AddIncredientId(Recipe recipe, int index)
+    {
+        var content = recipe.Content;
+        index = Math.Min(content.Ingredients.Count, index + 1);
+        content.Ingredients.Insert(index, new RecipeIngredient { });
+        // important to write changes to json!
+        recipe.Content = content;
+    }
+}

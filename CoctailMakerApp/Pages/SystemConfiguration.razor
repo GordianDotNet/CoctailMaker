@@ -13,8 +13,7 @@ else if (systemConfig == null && incredients == null)
 }
 else
 {
-    <button class="btn btn-primary" @onclick="Save">Save</button>
-    <button class="btn btn-primary" @onclick="DeleteDatabase">Delete database</button>
+    <button class="btn btn-primary" @onclick="Save"><i class="fa fa-save" /></button>
     <!-- EditForm is required to use InputNumber and InputDate -->
     <EditForm Model="systemConfig">
         <table class="table">
@@ -25,23 +24,33 @@ else
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>@nameof(SystemConfig.MaxIngredients)</td>
-                    <td><InputNumber @bind-Value="systemConfig.MaxIngredients" /></td>
-                </tr>
-                @for (int i = 0; systemConfig.IngredientIds != null && i < systemConfig.MaxIngredients && i < systemConfig.IngredientIds.Length; i++)
+                @if ((systemConfig?.IngredientIds?.Count ?? 0) == 0)
                 {
+                    <tr>
+                        <td>IngredientSlot</td>
+                        <td><span class="btn btn-outline-info" @onclick="(() => AddIncredientId(0))"><i class="fa fa-plus-circle" /></span></td>
+                    </tr>                    
+                }
+                @for (int i = 0; i < (systemConfig?.IngredientIds?.Count ?? 0); i++)
+                {
+                    //Required for onchange binding
                     var index = i;
                     <tr>
                         <td>Ingredient[@index]</td>
                         <td>
-                            <select class="form-control" @onchange="(e => SelectIncredient(index, e))" value="@systemConfig.IngredientIds[index]">
-                                <option value="0">-- Select Ingredient --</option>
-                                @foreach (var incredient in incredients)
-                                {
-                                    <option value="@incredient.Id">@incredient.Name</option>
-                                }
-                            </select>
+                            <div class="input-group mb-3">
+                                <select class="form-control" @onchange="(e => SelectIncredient(index, e))" value="@systemConfig.IngredientIds[index]">
+                                    <option value="0">-- Select Ingredient --</option>
+                                    @foreach (var incredient in incredients)
+                                    {
+                                        <option value="@incredient.Id">@incredient.Name</option>
+                                    }
+                                </select>
+                                <div class="input-group-append">
+                                    <span class="btn btn-outline-info" @onclick="(() => AddIncredientId(index))"><i class="fa fa-plus-circle" /></span>
+                                    <span class="btn btn-outline-danger" @onclick="(() => RemoveIncredientId(index))"><i class="fa fa-trash" /></span>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 }
@@ -73,6 +82,7 @@ else
 
         </table>
     </EditForm>
+    <button class="btn btn-danger" @onclick="DeleteDatabase"><i class="fa fa-exclamation-triangle pull-left" /> Delete database</button>
 }
 
 @code {
@@ -80,7 +90,7 @@ else
     [Inject]
     SystemConfigService SystemConfigService { get; set; }
     [Inject]
-    IngredientsService IngredientsService { get; set; }
+    IngredientService IngredientsService { get; set; }
     [Inject]
     IToastService ToastService { get; set; }
 
@@ -125,5 +135,16 @@ else
     {
         if (int.TryParse(e.Value.ToString(), out var incredientId))
             systemConfig.IngredientIds[index] = incredientId;
+    }
+
+    private void RemoveIncredientId(int index)
+    {
+        systemConfig.IngredientIds?.RemoveAt(index);
+    }
+
+    private void AddIncredientId(int index)
+    {
+        index = Math.Min(systemConfig.IngredientIds.Count, index + 1);
+        systemConfig.IngredientIds?.Insert(index, 0);
     }
 }

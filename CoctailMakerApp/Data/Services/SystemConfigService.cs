@@ -1,6 +1,7 @@
 using CoctailMakerApp.Data.Context;
 using CoctailMakerApp.Data.Entities;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,8 +26,6 @@ namespace CoctailMakerApp.Data.Services
 
         public Task Save(SystemConfig systemConfig)
         {
-            systemConfig?.UpdateIngredientIds();
-
             return Task.Run(() =>
             {
                 using (var dbContext = new SqliteDbContext())

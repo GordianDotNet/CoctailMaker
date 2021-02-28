@@ -1,5 +1,6 @@
 ﻿using CoctailMakerApp.Lib;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -8,30 +9,8 @@ namespace CoctailMakerApp.Data.Entities
 {
     public class SystemConfig
     {
-        [Range(0, 10)]
         [Required]
-        public int MaxIngredients { get; set; }
-        [Required]
-        public int[] IngredientIds { get; set; }
-
-        public void UpdateIngredientIds()
-        {
-            if (IngredientIds == null)
-            {
-                IngredientIds = new int[MaxIngredients];
-            }
-            else if (IngredientIds.Length != MaxIngredients)
-            {
-                var maxCopyCount = Math.Min(IngredientIds.Length, MaxIngredients);
-                var newValues = new int[MaxIngredients];
-                for (int i = 0; i < maxCopyCount; i++)
-                {
-                    newValues[i] = IngredientIds[i];
-                }
-                IngredientIds = newValues;
-            }
-        }
-                
+        public List<int> IngredientIds { get; set; } = new List<int>();                        
         public int IntValue { get; set; }
         public float FloatValue { get; set; }
         public double DoubleValue { get; set; }
