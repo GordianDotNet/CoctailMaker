@@ -1,5 +1,7 @@
 ﻿@page "/logevents"
 
+@using System.IO;
+
 <h1>Ereignisse</h1>
 
 @if (loadingException != null)
@@ -20,6 +22,7 @@ else
                 <th>Id</th>
                 <th>Date</th>
                 <th>Type</th>
+                <th>Code</th>
                 <th>Message</th>
                 <th>FuncName</th>
                 <th>File</th>
@@ -31,11 +34,44 @@ else
             {
                 <tr>
                     <td>@logEvent.Id</td>
-                    <td>@logEvent.Created.ToShortDateString()</td>
-                    <td>@logEvent.Type</td>
+                    <td>@logEvent.Created.ToString("dd.MM.yyyy HH\\:mm\\:ss")</td>
+                    <td>
+                        @switch (logEvent.Type)
+                        {
+                            case LogEventType.Debug:
+                                <span class="btn btn-light" title="@logEvent.Type"><i class="fa fa-info-circle" /></span>
+                                break;
+                            case LogEventType.Info:
+                                switch (logEvent.Code)
+                                {
+                                    case EventCode.DatabaseEntityAdded:
+                                    case EventCode.DatabaseEntityUpdated:
+                                        <span class="btn btn-success" title="@logEvent.Type"><i class="fa fa-check" /></span>
+                                        break;
+                                    case EventCode.DatabaseEntityDeleted:
+                                        <span class="btn btn-success" title="@logEvent.Type"><i class="fa fa-check" /></span>
+                                        break;
+                                    default:
+                                        <span class="btn btn-info" title="@logEvent.Type"><i class="fa fa-info" /></span>
+                                        break;
+                                }
+
+                                break;
+                            case LogEventType.Warning:
+                                <span class="btn btn-warning" title="@logEvent.Type"><i class="fa fa-exclamation" /></span>
+                                break;
+                            case LogEventType.Exception:
+                                <span class="btn btn-danger" title="@logEvent.Type"><i class="fa fa-exclamation-triangle" /></span>
+                                break;
+                            case LogEventType.Error:
+                                <span class="btn btn-danger" title="@logEvent.Type"><i class="fa fa-exclamation-triangle" /></span>
+                                break;
+                        }
+                    </td>
+                    <td>@logEvent.Code</td>
                     <td>@logEvent.Message</td>
                     <td>@logEvent.Func</td>
-                    <td>@logEvent.File</td>
+                    <td>@Path.GetFileName(logEvent.File)</td>
                     <td>@logEvent.Line</td>
                 </tr>
             }
@@ -73,8 +109,7 @@ else
 
     private async Task AddLogEvent()
     {
-        await DatabaseService.SaveLogEvent($"Hallo {DateTime.Now}");
-        ToastService.ShowSuccess($"[Saved] LogEvent");
+        await DatabaseService.SaveLogEvent($"Hallo {DateTime.Now}", EventCode.UnknownEvent);
         await Load();
     }
 
@@ -82,7 +117,6 @@ else
     {
         loadingException = null;
         await DatabaseService.DeleteDatabase();
-        ToastService.ShowWarning("[Delete] Database");
         await Load();
     }
 }

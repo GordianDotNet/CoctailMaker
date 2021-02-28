@@ -48,6 +48,26 @@ namespace CoctailMakerApp.Data.Entities
     public class LogEventData
     {
         // Additional optional event data (no database column)
+        public ExceptionData ExceptionData { get; set; }
+    }
+
+    public class ExceptionData
+    {
+        public ExceptionData() { }
+        public ExceptionData(Exception ex)
+        {
+            ExceptionTypeName = ex?.GetType().FullName;
+            ExceptionMessage = ex?.Message;
+            ExceptionStackTrace = ex?.StackTrace.ToString();
+            InnerExceptionMessage = ex?.InnerException?.Message;
+            InnerExceptionStackTrace = ex?.InnerException?.StackTrace.ToString();
+        }
+
+        public string ExceptionTypeName { get; set; }
+        public string ExceptionMessage { get; set; }
+        public string ExceptionStackTrace { get; set; }
+        public string InnerExceptionMessage { get; set; }
+        public string InnerExceptionStackTrace { get; set; }
     }
 
     public enum LogEventType
@@ -62,6 +82,20 @@ namespace CoctailMakerApp.Data.Entities
     public enum EventCode
     {
         UnknownEvent,
-        FilesystemFailed,
+        
+        DatabaseCreated,
+        DatabaseDeleted,
+
+        DatabaseEntityLoading,
+        DatabaseEntityLoadingFailed,
+
+        DatabaseEntityAdded,
+        DatabaseEntityAddedFailed,
+        
+        DatabaseEntityUpdated,
+        DatabaseEntityUpdatedFailed,
+
+        DatabaseEntityDeleted,        
+        DatabaseEntityDeletedFailed,
     }
 }

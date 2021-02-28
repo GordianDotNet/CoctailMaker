@@ -8,7 +8,7 @@ namespace CoctailMakerApp.Data.Context
 {
     public partial class SqliteDbContext : DbContext
     {
-        private static readonly string DATABASE_FILENAME = "Database.sqlite";
+        public static readonly string DATABASE_FILENAME = "Database.sqlite";
         public SqliteDbContext() : base()
         {
             Database.EnsureCreated();
@@ -53,14 +53,6 @@ namespace CoctailMakerApp.Data.Context
             });
 
             base.OnModelCreating(modelBuilder);
-        }
-
-        internal static void DeleteDatabase()
-        {
-            if (File.Exists(DATABASE_FILENAME))
-            {
-                File.Delete(DATABASE_FILENAME);
-            }
         }
     }
 }

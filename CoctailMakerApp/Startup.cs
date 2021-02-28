@@ -43,7 +43,7 @@ namespace CoctailMakerApp
             //services.AddSingleton<SystemConfigService>();
             //services.AddSingleton<IngredientService>();
             //services.AddSingleton<RecipeService>();
-            services.AddSingleton<MainLoopService>();
+            services.AddSingleton<MainService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

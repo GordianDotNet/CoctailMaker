@@ -12,14 +12,13 @@ using System.Timers;
 
 namespace CoctailMakerApp.Data.Services
 {
-    public partial class MainLoopService
+    public partial class MainService
     {
         public SystemStatus Status { get; protected set; } = new SystemStatus();
 
         protected async Task MainLoopAsync()
         {
             var ledPin = 1;
-            var toggle = false;
 
             GpioController gpio = null;
             SerialPort uart = null;
@@ -40,11 +39,12 @@ namespace CoctailMakerApp.Data.Services
             while (!token.IsCancellationRequested)
             {
                 await Task.Delay(1000);
+                Status.Led1State = !Status.Led1State;
                 Status.SystemTime = DateTime.Now;
                 _ = UpdateSystemStatus(Status);
 
-                toggle = !toggle;
-                gpio?.Write(ledPin, toggle ? PinValue.High : PinValue.Low);
+                
+                gpio?.Write(ledPin, Status.Led1State ? PinValue.High : PinValue.Low);
             }
         }
     }

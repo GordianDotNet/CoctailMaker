@@ -1,23 +1,58 @@
 ﻿@implements IDisposable
 @inherits ComponentBase
 
-<div><i class="fa fa-clock"></i> @(Status?.SystemTime.ToString() ?? "-")</div>
+<div><i class="@(Status?.Led1State ?? false ? "alert-warning fa" : "far") fa-lightbulb"/> <i class="fa fa-clock"></i> @(Status?.SystemTime.ToString() ?? "-")</div>
 
 @code
 {
-    [Inject] MainLoopService StatusService { get; set; }
+    [Inject] MainService StatusService { get; set; }
+    [Inject] DatabaseService DatabaseService { get; set; }
+    [Inject] IToastService ToastService { get; set; }
 
     protected SystemStatus Status { get; set; }
 
     protected override void OnInitialized()
     {
         StatusService.OnSystemStatusChanged += StatusService_OnSystemStatusChanged;
+        DatabaseService.OnLogEventCreated += DatabaseService_OnLogEvent;
     }
 
     private void StatusService_OnSystemStatusChanged(SystemStatus status)
     {
         Status = status;
         InvokeAsync(() => StateHasChanged());
+    }
+
+    private void DatabaseService_OnLogEvent(LogEvent logEvent)
+    {
+        InvokeAsync(() =>
+        {
+            switch (logEvent.Type)
+            {
+                case LogEventType.Warning:
+                    ToastService.ShowWarning($"[{logEvent.Code}] {logEvent.Message}");
+                    break;
+                case LogEventType.Error:
+                case LogEventType.Exception:
+                    ToastService.ShowError($"[{logEvent.Code}] {logEvent.Message}");
+                    break;
+                case LogEventType.Info:
+                    switch (logEvent.Code)
+                    {
+                        case EventCode.DatabaseEntityAdded:
+                        case EventCode.DatabaseEntityUpdated:
+                            ToastService.ShowSuccess($"[{logEvent.Code}] {logEvent.Message}");
+                            break;
+                        case EventCode.DatabaseEntityDeleted:
+                            ToastService.ShowWarning($"[{logEvent.Code}] {logEvent.Message}");
+                            break;
+                        default:
+                            ToastService.ShowInfo($"[{logEvent.Code}] {logEvent.Message}");
+                            break;
+                    }
+                    break;
+            }
+        });
     }
 
     public void Dispose()

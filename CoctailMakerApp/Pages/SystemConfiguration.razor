@@ -73,8 +73,6 @@ else
 
     [Inject]
     DatabaseService DatabaseService { get; set; }
-    [Inject]
-    IToastService ToastService { get; set; }
 
     private List<Ingredient> incredients;
     private SystemConfig systemConfig;
@@ -101,7 +99,6 @@ else
     private async Task Save()
     {
         await DatabaseService.Save(systemConfig);
-        ToastService.ShowSuccess($"[Saved] SystemConfig");
         await Load();
     }
 
@@ -109,7 +106,6 @@ else
     {
         loadingException = null;
         await DatabaseService.DeleteDatabase();
-        ToastService.ShowWarning("[Delete] Database");
         await Load();
     }
 

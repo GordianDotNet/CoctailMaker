@@ -1,18 +1,19 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CoctailMakerApp.Data.Entities;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace CoctailMakerApp.Data.Services
 {
-    public partial class MainLoopService
+    public partial class MainService
     {
         protected CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
         protected DatabaseService DatabaseService { get; }
-        protected ILogger<MainLoopService> Logger { get; }        
+        protected ILogger<MainService> Logger { get; }        
 
-        public MainLoopService(DatabaseService databaseService, ILogger<MainLoopService> logger)
+        public MainService(DatabaseService databaseService, ILogger<MainService> logger)
         {
             DatabaseService = databaseService;
             Logger = logger;

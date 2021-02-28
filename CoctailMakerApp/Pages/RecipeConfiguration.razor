@@ -109,7 +109,6 @@ else
         try
         {
             await DatabaseService.Save(recipe);
-            ToastService.ShowSuccess($"[Saved] New Recipe");
         }
         catch (Exception ex)
         {
@@ -125,7 +124,6 @@ else
         try
         {
             await DatabaseService.Save(recipe);
-            ToastService.ShowSuccess($"[Saved] Recipe {recipe.Name} ({recipe.Id})");
         }
         catch (Exception ex)
         {
@@ -136,7 +134,6 @@ else
     private async Task Delete(Recipe recipe)
     {
         await DatabaseService.Delete(recipe);
-        ToastService.ShowWarning($"[Deleted] Recipe {recipe.Name} ({recipe.Id})");
         await Load();
     }
 
