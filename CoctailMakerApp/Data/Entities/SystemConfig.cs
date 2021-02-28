@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace CoctailMakerApp.Data.Entities
 {
-    public class SystemConfig
+    public class SystemSettings
     {
         [Required]
         public List<int> IngredientIds { get; set; } = new List<int>();                        
@@ -18,31 +18,30 @@ namespace CoctailMakerApp.Data.Entities
         public string StringValue { get; set; }
     }
 
-    public class SystemJsonConfig
+    public class SystemConfig : IEntity
     {
         [Key]
         public int Id { get; set; }
         [Required]
         public DateTime Created { get; set; }
         [Required]
-        public string JsonContent { get; set; }
-
-        [NotMapped]
-        public SystemConfig Content
+        public string SettingsAsJson
         {
-            get
-            {
-                if (!string.IsNullOrWhiteSpace(JsonContent))
-                {
-                    return JsonHelper.Deserialize<SystemConfig>(JsonContent);
-                }
-
-                return new SystemConfig();
-            }
+            get { return JsonHelper.Serialize(Settings); }
             set
             {
-                JsonContent = JsonHelper.Serialize(value);
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    Settings = JsonHelper.Deserialize<SystemSettings>(value);
+                }
+                else
+                {
+                    Settings = new SystemSettings();
+                }
             }
         }
+
+        [NotMapped]
+        public SystemSettings Settings { get; set; } = new SystemSettings();
     }
 }

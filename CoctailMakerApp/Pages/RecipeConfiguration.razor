@@ -45,16 +45,16 @@ else
                                 </div>
                                 <textarea class="form-control" @bind="recipe.Text"></textarea>
                             </div>
-                            @if ((recipe?.Content?.Ingredients?.Count ?? 0) == 0)
+                            @if ((recipe?.Settings?.Ingredients?.Count ?? 0) == 0)
                             {
                                 <span class="btn btn-outline-info" @onclick="(() => AddIncredientId(recipe, 0))"><i class="fa fa-plus-circle" /></span>
                             }
-                            @for (int i = 0; i < (recipe?.Content?.Ingredients?.Count ?? 0); i++)
+                            @for (int i = 0; i < (recipe?.Settings?.Ingredients?.Count ?? 0); i++)
                             {
                                 //Required for onchange binding
                                 var index = i;
                                 <div class="input-group mb-3">
-                                    <select class="form-control" @onchange="(e => SelectIncredient(recipe, index, e))" value="@recipe.Content.Ingredients[index].IngredientId">
+                                    <select class="form-control" @onchange="(e => SelectIncredient(recipe, index, e))" value="@recipe.Settings.Ingredients[index].IngredientId">
                                         <option value="0">-- Select Ingredient --</option>
                                         @foreach (var incredient in incredients)
                                         {
@@ -81,9 +81,7 @@ else
 
 @code {
     [Inject]
-    RecipeService RecipeService { get; set; }
-    [Inject]
-    IngredientService IngredientService { get; set; }
+    DatabaseService DatabaseService { get; set; }
     [Inject]
     IToastService ToastService { get; set; }
 
@@ -97,26 +95,43 @@ else
 
     private async Task Load()
     {
-        recipes = (await RecipeService.LoadAll()).OrderByDescending(x => x.Id).ToArray();
-        incredients = (await IngredientService.LoadAll()).OrderBy(x => x.Name).ToArray();
+        recipes = (await DatabaseService.LoadAll<Recipe>()).OrderByDescending(x => x.Id).ToArray();
+        incredients = (await DatabaseService.LoadAll<Ingredient>()).OrderBy(x => x.Name).ToArray();
     }
 
     private async Task AddRecipe()
     {
-        await RecipeService.Save(new Recipe { Name = "", Base64Image = "", Text = "", Content = new RecipeConfig() });
-        ToastService.ShowSuccess($"[Saved] New Recipe");
+        var recipe = new Recipe { Name = $"Rezept {recipes.Length}", Base64Image = "", Text = "", Settings = new RecipeSettings() };
+        try
+        {
+            await DatabaseService.Save(recipe);
+            ToastService.ShowSuccess($"[Saved] New Recipe");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"[FAILED] New Recipe {ex.Message} {ex.InnerException?.Message}");
+        }
+
+
         await Load();
     }
 
     private async Task Save(Recipe recipe)
     {
-        await RecipeService.Save(recipe);
-        ToastService.ShowSuccess($"[Saved] Recipe {recipe.Name} ({recipe.Id})");
+        try
+        {
+            await DatabaseService.Save(recipe);
+            ToastService.ShowSuccess($"[Saved] Recipe {recipe.Name} ({recipe.Id})");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"[FAILED] Recipe {recipe.Name} ({recipe.Id}) {ex.Message} {ex.InnerException?.Message}");
+        }
     }
 
     private async Task Delete(Recipe recipe)
     {
-        await RecipeService.Delete(recipe);
+        await DatabaseService.Delete(recipe);
         ToastService.ShowWarning($"[Deleted] Recipe {recipe.Name} ({recipe.Id})");
         await Load();
     }
@@ -138,27 +153,18 @@ else
 
     private void SelectIncredient(Recipe recipe, int index, ChangeEventArgs e)
     {
-        var content = recipe.Content;
         if (int.TryParse(e.Value.ToString(), out var incredientId))
-            content.Ingredients[index].IngredientId = incredientId;
-        // important to write changes to json!
-        recipe.Content = content;
+            recipe.Settings.Ingredients[index].IngredientId = incredientId;
     }
 
     private void RemoveIncredientId(Recipe recipe, int index)
     {
-        var content = recipe.Content;
-        content.Ingredients.RemoveAt(index);
-        // important to write changes to json!
-        recipe.Content = content;
+        recipe.Settings.Ingredients.RemoveAt(index);
     }
 
     private void AddIncredientId(Recipe recipe, int index)
     {
-        var content = recipe.Content;
-        index = Math.Min(content.Ingredients.Count, index + 1);
-        content.Ingredients.Insert(index, new RecipeIngredient { });
-        // important to write changes to json!
-        recipe.Content = content;
+        index = Math.Min(recipe.Settings.Ingredients.Count, index + 1);
+        recipe.Settings.Ingredients.Insert(index, new RecipeIngredient { });
     }
 }

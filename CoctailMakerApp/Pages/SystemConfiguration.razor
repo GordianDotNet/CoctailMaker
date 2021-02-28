@@ -7,90 +7,72 @@
     <p><em>Loading failed: @loadingException.Message</em></p>
     <button class="btn btn-primary" @onclick="DeleteDatabase">Delete database</button>
 }
-else if (systemConfig == null && incredients == null)
+else if (systemConfig == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <button class="btn btn-primary" @onclick="Save"><i class="fa fa-save" /></button>
+    <button class="btn btn-primary mb-3" @onclick="Save"><i class="fa fa-save" /></button>
     <!-- EditForm is required to use InputNumber and InputDate -->
     <EditForm Model="systemConfig">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Value</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if ((systemConfig?.IngredientIds?.Count ?? 0) == 0)
-                {
-                    <tr>
-                        <td>IngredientSlot</td>
-                        <td><span class="btn btn-outline-info" @onclick="(() => AddIncredientId(0))"><i class="fa fa-plus-circle" /></span></td>
-                    </tr>                    
-                }
-                @for (int i = 0; i < (systemConfig?.IngredientIds?.Count ?? 0); i++)
-                {
-                    //Required for onchange binding
-                    var index = i;
-                    <tr>
-                        <td>Ingredient[@index]</td>
-                        <td>
-                            <div class="input-group mb-3">
-                                <select class="form-control" @onchange="(e => SelectIncredient(index, e))" value="@systemConfig.IngredientIds[index]">
-                                    <option value="0">-- Select Ingredient --</option>
-                                    @foreach (var incredient in incredients)
-                                    {
-                                        <option value="@incredient.Id">@incredient.Name</option>
-                                    }
-                                </select>
-                                <div class="input-group-append">
-                                    <span class="btn btn-outline-info" @onclick="(() => AddIncredientId(index))"><i class="fa fa-plus-circle" /></span>
-                                    <span class="btn btn-outline-danger" @onclick="(() => RemoveIncredientId(index))"><i class="fa fa-trash" /></span>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                }
-                <tr>
-                    <td>@nameof(SystemConfig.StringValue)</td>
-                    <td><input @bind="systemConfig.StringValue" type="text" /></td>
-                </tr>
-                <tr>
-                    <td>@nameof(SystemConfig.StringValue)</td>
-                    <td><input @bind="systemConfig.StringValue" type="text" /></td>
-                </tr>
-                <tr>
-                    <td>@nameof(SystemConfig.IntValue)</td>
-                    <td><InputNumber @bind-Value="systemConfig.IntValue" /></td>
-                </tr>
-                <tr>
-                    <td>@nameof(SystemConfig.FloatValue)</td>
-                    <td><InputNumber @bind-Value="systemConfig.FloatValue" /></td>
-                </tr>
-                <tr>
-                    <td>@nameof(SystemConfig.DoubleValue)</td>
-                    <td><InputNumber @bind-Value="systemConfig.DoubleValue" /></td>
-                </tr>
-                <tr>
-                    <td>@nameof(SystemConfig.DateTimeValue)</td>
-                    <td><InputDate @bind-Value="systemConfig.DateTimeValue" /></td>
-                </tr>
-            </tbody>
 
-        </table>
-    </EditForm>
-    <button class="btn btn-danger" @onclick="DeleteDatabase"><i class="fa fa-exclamation-triangle pull-left" /> Delete database</button>
+        @if ((systemConfig?.Settings.IngredientIds?.Count ?? 0) == 0)
+        {
+            <div class="input-group mb-3">
+                <div class="input-group-prepend"><span class="input-group-text">IngredientSlot</span></div>
+                <span class="btn btn-outline-info" @onclick="(() => AddIncredientId(0))"><i class="fa fa-plus-circle" /></span>
+            </div>
+        }
+        @for (int i = 0; i < (systemConfig?.Settings.IngredientIds?.Count ?? 0); i++)
+        {
+            //Required for onchange binding
+            var index = i;
+            <div class="input-group mb-3">
+                <div class="input-group-prepend"><span class="input-group-text">Ingredient[@index]</span></div>
+                <select class="form-control" @onchange="(e => SelectIncredient(index, e))" value="@systemConfig.Settings.IngredientIds[index]">
+                    <option value="0">-- Select Ingredient --</option>
+                    @if (incredients != null)
+                    {
+                        @foreach (var incredient in incredients)
+                        {
+                            <option value="@incredient.Id">@incredient.Name</option>
+                        }
+                    }
+                </select>
+                <div class="input-group-append">
+                    <span class="btn btn-outline-info" @onclick="(() => AddIncredientId(index))"><i class="fa fa-plus-circle" /></span>
+                    <span class="btn btn-outline-danger" @onclick="(() => RemoveIncredientId(index))"><i class="fa fa-trash" /></span>
+                </div>
+            </div>
+        }
+        <div class="input-group mb-3">
+            <div class="input-group-prepend"><span class="input-group-text">@nameof(SystemSettings.StringValue)</span></div>
+            <input class="form-control" @bind="systemConfig.Settings.StringValue" type="text" />
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend"><span class="input-group-text">@nameof(SystemSettings.IntValue)</span></div>
+            <InputNumber class="form-control" @bind-Value="systemConfig.Settings.IntValue" />
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend"><span class="input-group-text">@nameof(SystemSettings.FloatValue)</span></div>
+            <InputNumber class="form-control" @bind-Value="systemConfig.Settings.FloatValue" />
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend"><span class="input-group-text">@nameof(SystemSettings.DoubleValue)</span></div>
+            <InputNumber class="form-control" @bind-Value="systemConfig.Settings.DoubleValue" />
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend"><span class="input-group-text">@nameof(SystemSettings.DateTimeValue)</span></div>
+            <InputDate class="form-control" @bind-Value="systemConfig.Settings.DateTimeValue" />
+        </div>
+    </EditForm>    
 }
 
 @code {
 
     [Inject]
-    SystemConfigService SystemConfigService { get; set; }
-    [Inject]
-    IngredientService IngredientsService { get; set; }
+    DatabaseService DatabaseService { get; set; }
     [Inject]
     IToastService ToastService { get; set; }
 
@@ -107,8 +89,8 @@ else
     {
         try
         {
-            systemConfig = await SystemConfigService.Load();
-            incredients = await IngredientsService.LoadAll();
+            systemConfig = await DatabaseService.LoadSystemConfigOrCreateDefault();
+            incredients = await DatabaseService.LoadAll<Ingredient>();
         }
         catch (Exception ex)
         {
@@ -118,7 +100,7 @@ else
 
     private async Task Save()
     {
-        await SystemConfigService.Save(systemConfig);
+        await DatabaseService.Save(systemConfig);
         ToastService.ShowSuccess($"[Saved] SystemConfig");
         await Load();
     }
@@ -126,7 +108,7 @@ else
     private async Task DeleteDatabase()
     {
         loadingException = null;
-        await SystemConfigService.DeleteDatabase();
+        await DatabaseService.DeleteDatabase();
         ToastService.ShowWarning("[Delete] Database");
         await Load();
     }
@@ -134,17 +116,17 @@ else
     private void SelectIncredient(int index, ChangeEventArgs e)
     {
         if (int.TryParse(e.Value.ToString(), out var incredientId))
-            systemConfig.IngredientIds[index] = incredientId;
+            systemConfig.Settings.IngredientIds[index] = incredientId;
     }
 
     private void RemoveIncredientId(int index)
     {
-        systemConfig.IngredientIds?.RemoveAt(index);
+        systemConfig.Settings.IngredientIds.RemoveAt(index);
     }
 
     private void AddIncredientId(int index)
     {
-        index = Math.Min(systemConfig.IngredientIds.Count, index + 1);
-        systemConfig.IngredientIds?.Insert(index, 0);
+        index = Math.Min(systemConfig.Settings.IngredientIds.Count, index + 1);
+        systemConfig.Settings.IngredientIds.Insert(index, 0);
     }
 }

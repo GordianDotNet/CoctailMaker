@@ -4,7 +4,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CoctailMakerApp.Data.Entities
 {
-    public class Ingredient
+
+    public class Ingredient : IEntity
     {
         [Key]
         public int Id { get; set; }

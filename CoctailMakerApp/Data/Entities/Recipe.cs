@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CoctailMakerApp.Data.Entities
 {
-    public class Recipe
+    public class Recipe : IEntity
     {
         [Key]
         public int Id { get; set; }
@@ -22,28 +22,27 @@ namespace CoctailMakerApp.Data.Entities
         public string Base64Image { get; set; }
         
         [Required]
-        public string JsonContent { get; set; }
-
-        [NotMapped]
-        public RecipeConfig Content
+        public string SettingsAsJson
         {
-            get
-            {
-                if (!string.IsNullOrWhiteSpace(JsonContent))
-                {
-                    return JsonHelper.Deserialize<RecipeConfig>(JsonContent);
-                }
-
-                return new RecipeConfig();
-            }
+            get { return JsonHelper.Serialize(Settings); }
             set
             {
-                JsonContent = JsonHelper.Serialize(value);
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    Settings = JsonHelper.Deserialize<RecipeSettings>(value);
+                }
+                else
+                {
+                    Settings = new RecipeSettings();
+                }
             }
         }
+
+        [NotMapped]
+        public RecipeSettings Settings { get; set; }
     }
 
-    public class RecipeConfig
+    public class RecipeSettings
     {
         public List<RecipeIngredient> Ingredients { get; set; } = new List<RecipeIngredient>();
     }

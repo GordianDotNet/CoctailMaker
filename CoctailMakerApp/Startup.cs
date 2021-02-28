@@ -38,10 +38,11 @@ namespace CoctailMakerApp
                 logging.AddConsole();
                 });
 
-            services.AddSingleton<LogEventService>();
-            services.AddSingleton<SystemConfigService>();
-            services.AddSingleton<IngredientService>();
-            services.AddSingleton<RecipeService>();
+            services.AddSingleton<DatabaseService>();
+            //services.AddSingleton<LogEventService>();
+            //services.AddSingleton<SystemConfigService>();
+            //services.AddSingleton<IngredientService>();
+            //services.AddSingleton<RecipeService>();
             services.AddSingleton<MainLoopService>();
         }
 

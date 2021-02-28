@@ -5,7 +5,7 @@
 @if (loadingException != null)
 {
     <p><em>Loading failed: @loadingException.Message</em></p>
-    <button class="btn btn-primary" @onclick="DeleteDatabase">Delete database</button>
+    <button class="btn btn-danger" @onclick="DeleteDatabase"><i class="fa fa-exclamation-triangle pull-left" /> Delete database</button>
 }
 else if (logEvents == null)
 {
@@ -13,8 +13,7 @@ else if (logEvents == null)
 }
 else
 {
-    <button class="btn btn-primary" @onclick="AddLogEvent">Add event</button>
-    <button class="btn btn-primary" @onclick="DeleteDatabase">Delete database</button>
+    <button class="btn btn-primary mb-3" @onclick="AddLogEvent"><i class="fa fa-plus-circle" /></button>
     <table class="table">
         <thead>
             <tr>
@@ -41,13 +40,13 @@ else
                 </tr>
             }
         </tbody>
-
     </table>
+    <button class="btn btn-danger" @onclick="DeleteDatabase"><i class="fa fa-exclamation-triangle pull-left" /> Delete database</button>
 }
 
 @code {
     [Inject]
-    LogEventService LogEventService { get; set; }
+    DatabaseService DatabaseService { get; set; }
     [Inject]
     IToastService ToastService { get; set; }
 
@@ -63,7 +62,7 @@ else
     {
         try
         {
-            logEvents = (await LogEventService.LoadAll()).OrderByDescending(x => x.Id).ToArray();
+            logEvents = (await DatabaseService.LoadAll<LogEvent>()).OrderByDescending(x => x.Id).ToArray();
         }
         catch (Exception ex)
         {
@@ -74,7 +73,7 @@ else
 
     private async Task AddLogEvent()
     {
-        await LogEventService.Save($"Hallo {DateTime.Now}");
+        await DatabaseService.SaveLogEvent($"Hallo {DateTime.Now}");
         ToastService.ShowSuccess($"[Saved] LogEvent");
         await Load();
     }
@@ -82,7 +81,7 @@ else
     private async Task DeleteDatabase()
     {
         loadingException = null;
-        await LogEventService.DeleteDatabase();
+        await DatabaseService.DeleteDatabase();
         ToastService.ShowWarning("[Delete] Database");
         await Load();
     }

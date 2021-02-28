@@ -68,7 +68,7 @@ else
 
 @code {
     [Inject]
-    IngredientService IngredientsService { get; set; }
+    DatabaseService DatabaseService { get; set; }
     [Inject]
     IToastService ToastService { get; set; }
 
@@ -81,25 +81,25 @@ else
 
     private async Task Load()
     {
-        ingredients = (await IngredientsService.LoadAll()).OrderByDescending(x => x.Id).ToArray();
+        ingredients = (await DatabaseService.LoadAll<Ingredient>()).OrderByDescending(x => x.Id).ToArray();
     }
 
     private async Task AddIngredient()
     {
-        await IngredientsService.Save(new Ingredient { Name = "", Base64Image = "", Quantity = 0, QuantityUnit = Unit.ml, Text = "" });
+        await DatabaseService.Save(new Ingredient { Name = $"Ingredient {ingredients.Length}", Base64Image = "", Quantity = 0, QuantityUnit = Unit.ml, Text = "" });
         ToastService.ShowSuccess($"[Saved] New Ingredient");
         await Load();
     }
 
     private async Task Save(Ingredient ingredient)
     {
-        await IngredientsService.Save(ingredient);
+        await DatabaseService.Save(ingredient);
         ToastService.ShowSuccess($"[Saved] Ingredient {ingredient.Name} ({ingredient.Id})");
     }
 
     private async Task Delete(Ingredient ingredient)
     {
-        await IngredientsService.Delete(ingredient);
+        await DatabaseService.Delete(ingredient);
         ToastService.ShowWarning($"[Deleted] Ingredient {ingredient.Name} ({ingredient.Id})");
         await Load();
     }
