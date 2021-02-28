@@ -1,10 +1,5 @@
 @page "/systemconfiguration"
 
-@using CoctailMakerApp.Data.Services
-@using CoctailMakerApp.Data.Entities
-@inject SystemConfigService SystemConfigService
-@inject IngredientsService IngredientsService
-
 <h1>Systemkonfiguration</h1>
 
 @if (loadingException != null)
@@ -81,6 +76,14 @@ else
 }
 
 @code {
+
+    [Inject]
+    SystemConfigService SystemConfigService { get; set; }
+    [Inject]
+    IngredientsService IngredientsService { get; set; }
+    [Inject]
+    IToastService ToastService { get; set; }
+
     private List<Ingredient> incredients;
     private SystemConfig systemConfig;
     private Exception loadingException;
@@ -106,6 +109,7 @@ else
     private async Task Save()
     {
         await SystemConfigService.Save(systemConfig);
+        ToastService.ShowSuccess($"[Saved] SystemConfig");
         await Load();
     }
 
@@ -113,6 +117,7 @@ else
     {
         loadingException = null;
         await SystemConfigService.DeleteDatabase();
+        ToastService.ShowWarning("[Delete] Database");
         await Load();
     }
 

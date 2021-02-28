@@ -1,14 +1,17 @@
 using CoctailMakerApp.Data.Context;
 using CoctailMakerApp.Data.Entities;
-using System;
+using Microsoft.Extensions.Logging;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace CoctailMakerApp.Data.Services
 {
     public class SystemConfigService : DatabaseServiceBase
     {
+        public SystemConfigService(ILogger<SystemConfigService> logger) : base(logger)
+        {
+        }
+
         public Task<SystemConfig> Load()
         {
             return Task.Run(() =>

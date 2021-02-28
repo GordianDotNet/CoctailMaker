@@ -10,6 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using CoctailMakerApp.Data.Services;
+using Blazored.Toast;
+using Microsoft.Extensions.Logging;
+using System.Device.Gpio;
 
 namespace CoctailMakerApp
 {
@@ -28,10 +31,18 @@ namespace CoctailMakerApp
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+
+            services.AddBlazoredToast();
+
+            services.AddLogging(logging => {
+                logging.AddConsole();
+                });
+
             services.AddSingleton<LogEventService>();
             services.AddSingleton<SystemConfigService>();
             services.AddSingleton<IngredientsService>();
             services.AddSingleton<RecipeService>();
+            services.AddSingleton<MainLoopService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

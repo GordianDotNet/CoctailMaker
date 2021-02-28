@@ -1,5 +1,7 @@
+using Blazored.Toast.Services;
 using CoctailMakerApp.Data.Context;
 using CoctailMakerApp.Data.Entities;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -10,6 +12,10 @@ namespace CoctailMakerApp.Data.Services
 
     public class LogEventService : DatabaseServiceBase
     {
+        public LogEventService(ILogger<LogEventService> logger) : base(logger)
+        {
+        }
+
         public Task<List<LogEvent>> LoadAll()
         {
             return Task.Run(() =>

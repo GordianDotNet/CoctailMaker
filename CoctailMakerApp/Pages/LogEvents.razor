@@ -1,10 +1,6 @@
 ﻿@page "/logevents"
 
 @using System.Linq
-@using CoctailMakerApp.Data
-@using CoctailMakerApp.Data.Services
-@using CoctailMakerApp.Data.Entities
-@inject LogEventService LogEventService
 
 <h1>LogEvents</h1>
 
@@ -54,6 +50,11 @@ else
 }
 
 @code {
+    [Inject]
+    LogEventService LogEventService { get; set; }
+    [Inject]
+    IToastService ToastService { get; set; }
+
     private LogEvent[] logEvents;
     private Exception loadingException;
 
@@ -71,12 +72,14 @@ else
         catch (Exception ex)
         {
             loadingException = ex;
+            ToastService.ShowError(ex.Message);
         }
     }
 
     private async Task AddLogEvent()
     {
         await LogEventService.Save($"Hallo {DateTime.Now}");
+        ToastService.ShowSuccess($"[Saved] LogEvent");
         await Load();
     }
 
@@ -84,6 +87,7 @@ else
     {
         loadingException = null;
         await LogEventService.DeleteDatabase();
+        ToastService.ShowWarning("[Delete] Database");
         await Load();
     }
 }

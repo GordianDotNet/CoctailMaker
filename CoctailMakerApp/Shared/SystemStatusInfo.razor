@@ -1,0 +1,27 @@
+﻿@implements IDisposable
+@inherits ComponentBase
+
+<div><i class="fa fa-clock"></i> @(Status?.SystemTime.ToString() ?? "-")</div>
+
+@code
+{
+    [Inject] MainLoopService StatusService { get; set; }
+
+    protected SystemStatus Status { get; set; }
+
+    protected override void OnInitialized()
+    {
+        StatusService.OnSystemStatusChanged += StatusService_OnSystemStatusChanged;
+    }
+
+    private void StatusService_OnSystemStatusChanged(SystemStatus status)
+    {
+        Status = status;
+        InvokeAsync(() => StateHasChanged());
+    }
+
+    public void Dispose()
+    {
+        StatusService.OnSystemStatusChanged -= StatusService_OnSystemStatusChanged;
+    }
+}

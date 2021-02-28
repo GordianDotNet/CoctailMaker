@@ -1,17 +1,13 @@
 ﻿@page "/ingredientconfiguration"
 
 @using System.Linq
-@using CoctailMakerApp.Data
-@using CoctailMakerApp.Data.Services
-@using CoctailMakerApp.Data.Entities
-@inject IngredientsService IngredientsService
 
 <h1>Zutaten Konfiguration</h1>
-<button @onclick="AddIngredient" class="btn btn-primary btn-rounded mb-3"><span class="oi oi-plus"></span></button>
+<button @onclick="AddIngredient" class="btn btn-primary btn-rounded mb-3"><i class="fa fa-plus-circle" /></button>
 
 @if (ingredients == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em><i class="fa fa-database" />Loading...</em></p>
 }
 else
 {
@@ -43,7 +39,7 @@ else
                     <div class="card-body">
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
-                                <span class="input-group-text"><span class="oi oi-header" aria-hidden="true"></span></span>
+                                <span class="input-group-text"><i class="fa fa-id-badge" /></span>
                             </div>
                             <input type="text" class="form-control" @bind="ingredient.Name" placeholder="Name">
                         </div>
@@ -58,14 +54,14 @@ else
                         </div>
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
-                                <span class="input-group-text"><span class="oi oi-text" aria-hidden="true"></span></span>
+                                <span class="input-group-text"><i class="fa fa-file-alt" /></span>
                             </div>
                             <textarea class="form-control" @bind="ingredient.Text"></textarea>
                         </div>
                     </div>
                     <div class="card-footer">
-                        <button class="btn btn-outline-danger" @onclick="(e => Delete(ingredient))">Delete</button>
-                        <button class="btn btn-primary" @onclick="(e => Save(ingredient))">Save</button>
+                        <button class="btn btn-danger" @onclick="(e => Delete(ingredient))"><i class="fa fa-trash" /></button>
+                        <button class="btn btn-primary" @onclick="(e => Save(ingredient))"><i class="fa fa-save" /></button>
                     </div>
                 </div>
             </div>
@@ -75,6 +71,11 @@ else
 }
 
 @code {
+    [Inject]
+    IngredientsService IngredientsService { get; set; }
+    [Inject]
+    IToastService ToastService { get; set; }
+
     private Ingredient[] ingredients;
 
     protected override async Task OnInitializedAsync()
@@ -90,17 +91,20 @@ else
     private async Task AddIngredient()
     {
         await IngredientsService.Save(new Ingredient { Name = "", Base64Image = "", Quantity = 0, QuantityUnit = Unit.ml, Text = "" });
+        ToastService.ShowSuccess($"[Saved] New Ingredient");
         await Load();
     }
 
     private async Task Save(Ingredient ingredient)
     {
         await IngredientsService.Save(ingredient);
+        ToastService.ShowSuccess($"[Saved] Ingredient {ingredient.Name} ({ingredient.Id})");
     }
 
     private async Task Delete(Ingredient ingredient)
     {
         await IngredientsService.Delete(ingredient);
+        ToastService.ShowWarning($"[Deleted] Ingredient {ingredient.Name} ({ingredient.Id})");
         await Load();
     }
 

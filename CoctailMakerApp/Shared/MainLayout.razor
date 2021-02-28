@@ -1,13 +1,23 @@
 @inherits LayoutComponentBase
 
 <div class="page">
+    <BlazoredToasts Position="ToastPosition.BottomRight"
+                    Timeout="10"
+                    ShowProgressBar="true"
+                    IconType="IconType.FontAwesome"
+                    SuccessClass="success-toast-override"
+                    SuccessIcon="fa fa-check"
+                    ErrorIcon="fa fa-times"
+                    InfoIcon="fa fa-info"
+                    WarningIcon="fa fa-exclamation" />
+
     <div class="sidebar">
         <NavMenu />
     </div>
 
     <div class="main">
         <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+            <SystemStatusInfo />
         </div>
 
         <div class="content px-4">

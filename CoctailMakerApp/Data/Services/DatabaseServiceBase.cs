@@ -1,27 +1,17 @@
 ﻿using CoctailMakerApp.Data.Context;
-using System;
-using System.Linq;
+using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
 namespace CoctailMakerApp.Data.Services
 {
     public class DatabaseServiceBase
     {
-        private static readonly string[] Summaries = new[]
+        public DatabaseServiceBase(ILogger logger)
         {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
-        public Task<WeatherForecast[]> GetForecastAsync(DateTime startDate)
-        {
-            var rng = new Random();
-            return Task.FromResult(Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = startDate.AddDays(index),
-                TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
-            }).ToArray());
+            Logger = logger;
         }
+
+        public ILogger Logger { get; }
 
         public Task DeleteDatabase()
         {
