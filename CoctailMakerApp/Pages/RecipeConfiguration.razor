@@ -15,7 +15,7 @@ else
         {
             <EditForm Model="recipe">
                 <div class="col-sm-6">
-                    <div class="card mb-3" style="width: 24rem;">
+                    <div class="card mb-3" style="width: 32rem;">
                         @if (!string.IsNullOrWhiteSpace(recipe.Base64Image))
                         {
 
@@ -53,19 +53,23 @@ else
                             {
                                 //Required for onchange binding
                                 var index = i;
-                                <div class="input-group mb-3">
-                                    <select class="form-control" @onchange="(e => SelectIncredient(recipe, index, e))" value="@recipe.Settings.Ingredients[index].IngredientId">
-                                        <option value="0">-- Select Ingredient --</option>
-                                        @foreach (var incredient in incredients)
-                                        {
-                                            <option value="@incredient.Id">@incredient.Name</option>
-                                        }
-                                    </select>
-                                    <div class="input-group-append">
-                                        <span class="btn btn-outline-info" @onclick="(() => AddIncredientId(recipe, index))"><i class="fa fa-plus-circle" /></span>
-                                        <span class="btn btn-outline-danger" @onclick="(() => RemoveIncredientId(recipe, index))"><i class="fa fa-trash" /></span>
-                                    </div>
-                                </div>
+                                var recipeIncredient = recipe.Settings.Ingredients[index];
+                                var selectedIncredient = incredients.Where(x => x.Id == recipeIncredient.IngredientId).FirstOrDefault();
+                        <div class="input-group mb-3">
+                            <select class="form-control" @onchange="(e => SelectIncredient(recipe, index, e))" value="@recipeIncredient.IngredientId">
+                                <option value="0">-- Select Ingredient --</option>
+                                @foreach (var incredient in incredients)
+                                {
+                                    <option value="@incredient.Id">@incredient.Name</option>
+                                }
+                            </select>
+                            <InputNumber class="form-control" @bind-Value="recipeIncredient.Quantity" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">@selectedIncredient?.QuantityUnit</span>
+                                <span class="btn btn-outline-info" @onclick="(() => AddIncredientId(recipe, index))"><i class="fa fa-plus-circle" /></span>
+                                <span class="btn btn-outline-danger" @onclick="(() => RemoveIncredientId(recipe, index))"><i class="fa fa-trash" /></span>
+                            </div>
+                        </div>
                             }
                         </div>
                         <div class="card-footer">

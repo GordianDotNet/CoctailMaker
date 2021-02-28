@@ -1,7 +1,80 @@
 @page "/"
 
-<h1>Durstig?</h1>
+<h1>Durstig? W&auml;hle einen Drink!</h1>
 
-Willkommen beim CoctailMaker!
+@if (recipes == null)
+{
+    <p><em><i class="fa fa-database" />Loading...</em></p>
+}
+else
+{
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+    <div class="row">
+        @foreach (var recipe in recipes)
+        {
+            <EditForm Model="recipe">
+                <div class="col-sm-6">
+                    <div class="card mb-3" style="width: 24rem;">
+                        @if (!string.IsNullOrWhiteSpace(recipe.Base64Image))
+                        {
+                            <label class="btn btn-sm center-block btn-file" title="Change image ...">
+                                <img src="@recipe.Base64Image" class="card-img-top">
+                            </label>
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@recipe.Name</h5>
+                            <p class="card-text">@recipe.Text</p>
+                        </div>
+                        @if (recipe?.Settings?.Ingredients != null)
+                        {
+                            @foreach (var recipeIncredient in recipe.Settings.Ingredients)
+                            {
+                                //Required for onchange binding
+                                var incredient = incredients.Where(x => x.Id == recipeIncredient.IngredientId).FirstOrDefault();
+                                if (incredient != null)
+                                {
+                                    <div class="input-group mb-1">
+                                        <input type="text" class="form-control" value="@incredient?.Name" readonly>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">@recipeIncredient.Quantity</span>
+                                            <span class="input-group-text">@incredient?.QuantityUnit</span>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        }
+                        <div class="card-footer">
+                            <button class="btn btn-danger" @onclick="(e => MakeCoctail(recipe))"><i class="fa fa-glass-martini-alt" /></button>
+                        </div>
+                    </div>                    
+                </div>
+            </EditForm>
+        }
+    </div>
+}
+
+@code {
+    [Inject]
+    DatabaseService DatabaseService { get; set; }
+    [Inject]
+    IToastService ToastService { get; set; }
+
+    private Recipe[] recipes;
+    private Ingredient[] incredients;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        recipes = (await DatabaseService.LoadAll<Recipe>()).OrderByDescending(x => x.Id).ToArray();
+        incredients = (await DatabaseService.LoadAll<Ingredient>()).OrderBy(x => x.Name).ToArray();
+    }
+
+    private void MakeCoctail(Recipe recipe)
+    {
+        ToastService.ShowInfo($"Coctail {recipe.Name} starting ...");
+    }
+}
