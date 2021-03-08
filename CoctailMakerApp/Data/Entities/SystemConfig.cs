@@ -10,12 +10,15 @@ namespace CoctailMakerApp.Data.Entities
     public class SystemSettings
     {
         [Required]
-        public List<int> IngredientIds { get; set; } = new List<int>();                        
-        public int IntValue { get; set; }
-        public float FloatValue { get; set; }
-        public double DoubleValue { get; set; }
-        public DateTime DateTimeValue { get; set; }
-        public string StringValue { get; set; }
+        public List<SlotConfig> Slots { get; set; } = new List<SlotConfig>();
+    }
+
+    public class SlotConfig
+    {
+        public int IngredientId { get; set; }
+        public double QuantityPerTime { get; set; }
+        public Unit QuantityUnit { get; set; }
+        public double RemainingQuantity { get; set; }
     }
 
     public class SystemConfig : IEntity

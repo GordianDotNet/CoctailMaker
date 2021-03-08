@@ -14,59 +14,65 @@ else if (systemConfig == null)
 else
 {
     <button class="btn btn-primary mb-3" @onclick="Save"><i class="fa fa-save" /></button>
-    <!-- EditForm is required to use InputNumber and InputDate -->
-    <EditForm Model="systemConfig">
 
-        @if ((systemConfig?.Settings.IngredientIds?.Count ?? 0) == 0)
-        {
-            <div class="input-group mb-3">
-                <div class="input-group-prepend"><span class="input-group-text">IngredientSlot</span></div>
-                <span class="btn btn-outline-info" @onclick="(() => AddIncredientId(0))"><i class="fa fa-plus-circle" /></span>
-            </div>
-        }
-        @for (int i = 0; i < (systemConfig?.Settings.IngredientIds?.Count ?? 0); i++)
-        {
-            //Required for onchange binding
-            var index = i;
-            <div class="input-group mb-3">
+
+    @*@if ((systemConfig?.Settings.Slots?.Count ?? 0) == 0)
+    {
+        <div class="input-group mb-3">
+            <div class="input-group-prepend"><span class="input-group-text">IngredientSlot</span></div>
+            <span class="btn btn-outline-info" @onclick="(() => AddIngredientId(0))"><i class="fa fa-plus-circle" /></span>
+        </div>
+    }*@
+    @for (int i = 0; i < (systemConfig?.Settings.Slots?.Count ?? 0); i++)
+    {
+        //Required for onchange binding
+        var index = i;
+        var slotConfig = systemConfig.Settings.Slots[index];
+        <EditForm Model="slotConfig">
+            <div class="input-group">
                 <div class="input-group-prepend"><span class="input-group-text">Ingredient[@index]</span></div>
-                <select class="form-control" @onchange="(e => SelectIncredient(index, e))" value="@systemConfig.Settings.IngredientIds[index]">
+                <select class="form-control" @onchange="(e => SelectIngredient(index, e))" value="@slotConfig.IngredientId">
                     <option value="0">-- Select Ingredient --</option>
-                    @if (incredients != null)
+                    @if (ingredients != null)
                     {
-                        @foreach (var incredient in incredients)
+                        @foreach (var incredient in ingredients)
                         {
                             <option value="@incredient.Id">@incredient.Name</option>
                         }
                     }
                 </select>
                 <div class="input-group-append">
-                    <span class="btn btn-outline-info" @onclick="(() => AddIncredientId(index))"><i class="fa fa-plus-circle" /></span>
-                    <span class="btn btn-outline-danger" @onclick="(() => RemoveIncredientId(index))"><i class="fa fa-trash" /></span>
+                    @*<span class="btn btn-outline-info" @onclick="(() => AddIngredientId(index))"><i class="fa fa-plus-circle" /></span>*@
+                    <span class="btn btn-outline-danger" @onclick="(() => RemoveIngredientId(index))"><i class="fa fa-trash" /></span>
                 </div>
             </div>
-        }
-        <div class="input-group mb-3">
-            <div class="input-group-prepend"><span class="input-group-text">@nameof(SystemSettings.StringValue)</span></div>
-            <input class="form-control" @bind="systemConfig.Settings.StringValue" type="text" />
-        </div>
-        <div class="input-group mb-3">
-            <div class="input-group-prepend"><span class="input-group-text">@nameof(SystemSettings.IntValue)</span></div>
-            <InputNumber class="form-control" @bind-Value="systemConfig.Settings.IntValue" />
-        </div>
-        <div class="input-group mb-3">
-            <div class="input-group-prepend"><span class="input-group-text">@nameof(SystemSettings.FloatValue)</span></div>
-            <InputNumber class="form-control" @bind-Value="systemConfig.Settings.FloatValue" />
-        </div>
-        <div class="input-group mb-3">
-            <div class="input-group-prepend"><span class="input-group-text">@nameof(SystemSettings.DoubleValue)</span></div>
-            <InputNumber class="form-control" @bind-Value="systemConfig.Settings.DoubleValue" />
-        </div>
-        <div class="input-group mb-3">
-            <div class="input-group-prepend"><span class="input-group-text">@nameof(SystemSettings.DateTimeValue)</span></div>
-            <InputDate class="form-control" @bind-Value="systemConfig.Settings.DateTimeValue" />
-        </div>
-    </EditForm>    
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><span class="oi oi-timer"></span></span>
+                    <span class="input-group-text">QuantityPerTime</span>
+                </div>
+                <InputNumber class="form-control" @bind-Value="slotConfig.QuantityPerTime"></InputNumber>
+                <div class="input-group-append">
+                    <span class="input-group-text">@slotConfig.QuantityUnit</span>
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><span class="oi oi-droplet"></span></span>
+                    <span class="input-group-text">RemainingQuantity</span>
+                </div>
+                <InputNumber class="form-control" @bind-Value="slotConfig.RemainingQuantity"></InputNumber>
+                <div class="input-group-append">
+                    <span class="input-group-text">@slotConfig.QuantityUnit</span>
+                </div>
+            </div>
+        </EditForm>
+    }
+
+    <div class="input-group mb-3">
+        <div class="input-group-prepend"><span class="input-group-text">IngredientSlot</span></div>
+        <span class="btn btn-outline-info" @onclick="(() => AddIngredientId(0))"><i class="fa fa-plus-circle" /></span>
+    </div>
 }
 
 @code {
@@ -74,7 +80,7 @@ else
     [Inject]
     DatabaseService DatabaseService { get; set; }
 
-    private List<Ingredient> incredients;
+    private List<Ingredient> ingredients;
     private SystemConfig systemConfig;
     private Exception loadingException;
 
@@ -88,7 +94,7 @@ else
         try
         {
             systemConfig = await DatabaseService.LoadSystemConfigOrCreateDefault();
-            incredients = await DatabaseService.LoadAll<Ingredient>();
+            ingredients = await DatabaseService.LoadAll<Ingredient>();
         }
         catch (Exception ex)
         {
@@ -109,20 +115,25 @@ else
         await Load();
     }
 
-    private void SelectIncredient(int index, ChangeEventArgs e)
+    private void SelectIngredient(int index, ChangeEventArgs e)
     {
         if (int.TryParse(e.Value.ToString(), out var incredientId))
-            systemConfig.Settings.IngredientIds[index] = incredientId;
+        {
+            var ingredient = ingredients.Where(x => x.Id == incredientId).FirstOrDefault();
+            systemConfig.Settings.Slots[index].IngredientId = incredientId;
+            systemConfig.Settings.Slots[index].QuantityUnit = ingredient.QuantityUnit;
+            systemConfig.Settings.Slots[index].RemainingQuantity = ingredient.Quantity;
+        }
     }
 
-    private void RemoveIncredientId(int index)
+    private void RemoveIngredientId(int index)
     {
-        systemConfig.Settings.IngredientIds.RemoveAt(index);
+        systemConfig.Settings.Slots.RemoveAt(index);
     }
 
-    private void AddIncredientId(int index)
+    private void AddIngredientId(int index)
     {
-        index = Math.Min(systemConfig.Settings.IngredientIds.Count, index + 1);
-        systemConfig.Settings.IngredientIds.Insert(index, 0);
+        index = Math.Min(systemConfig.Settings.Slots.Count, index + 1);
+        systemConfig.Settings.Slots.Insert(index, new SlotConfig { });
     }
 }
